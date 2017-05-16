@@ -1,0 +1,19 @@
+{
+  "name": "coffee-jsx-lint",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-core": "^6.24.1",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "coffee-script": "^1.12.5",
+    "coffeelint": "^1.16.0",
+    "eslint": "^3.19.0",
+    "fs-jetpack": "^0.13.3"
+  }
+}

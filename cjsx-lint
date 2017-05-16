@@ -1,0 +1,8 @@
+#/bin/bash
+
+#git diff --name-onlycd
+DIR=$(pwd)
+pushd $(pwd) > /dev/null
+cd "$(dirname $0)"
+node main.js "$@" --dir "$DIR"
+popd > /dev/null
