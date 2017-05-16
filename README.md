@@ -1,10 +1,15 @@
 # cjsx-lint
 Simple script for linting coffee script &amp; resulting JSX &amp; resulting Javascript code
 
-## Usage
-1. Add cjsx-lint to your path
+## Install
+1. Clone `git clone https://github.com/vaclav-purchart/cjsx-lint`
+2. `cd cjsx-lint`
+3. `npm install`
+4. Add cjsx-lint to your path
 > `export PATH="$PATH:/Users/me/git/cjsx-lint/"`
 
+
+## Usage
 2. Somewhere in your GIT repository
 > `cjsx-lint --diff`
 
