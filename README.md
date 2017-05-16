@@ -6,16 +6,16 @@ Simple script for linting coffee script &amp; resulting JSX &amp; resulting Java
 > `export PATH="$PATH:/Users/me/git/cjsx-lint/"`
 
 2. Somewhere in your GIT repository
-`cjsx-lint --diff`
+> `cjsx-lint --diff`
 
 
 (or)
 
 3. Anywhere
-`cjsx-lint --diff --dir /path/to/git/repository`
+> `cjsx-lint --diff --dir /path/to/git/repository`
 
 
 (or)
 
 4. For one file
-`cjsx-lint some/folder/file.coffee`
+> `cjsx-lint some/folder/file.coffee`
