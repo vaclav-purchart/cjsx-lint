@@ -18,7 +18,7 @@ const exec = require('child_process').execSync;
 function log() {
 	verbose && console.log.apply(console, arguments);
 }
-verbose = 1;
+
 // -- working dir
 if (process.argv.indexOf('--dir') >= 0) {
 	pwd = process.argv[process.argv.indexOf('--dir') + 1];
@@ -30,7 +30,7 @@ if (process.argv.indexOf('--dir') >= 0) {
 }
 
 if (script === '--diff') {
-	
+
 	console.log('================');
 	let gitRoot = path.dirname(pwd);
 	gitRoot = `${pwd}/.git`;
@@ -39,7 +39,7 @@ if (script === '--diff') {
 	}
 	gitRoot = path.dirname(gitRoot);
 	log(`Detected GIT root: "${gitRoot}"`);
-	
+
 	let cmd = `cd "${gitRoot}" && git diff --name-only`
 	let files = exec(cmd).toString().trim().split('\n');
 
@@ -118,7 +118,7 @@ function checkFile(script) {
 	log('Compling JSX ...');
 	let jsxCode = jetpack.read(outJsx);
 	let jsResult = require("babel-core").transform(jsxCode, {
-	  plugins: ["transform-react-jsx"]
+		plugins: ["transform-react-jsx"]
 	});
 	let jsCode = jsResult.code;
 
@@ -128,7 +128,7 @@ function checkFile(script) {
 	// -- run EsLint
 	log('Running esLint ...');
 	var CLIEngine = require("eslint").CLIEngine;
-	const config = {"extends": "eslint:recommended"};
+	const config = { "extends": "eslint:recommended" };
 
 	const cliEngine = new CLIEngine({
 		baseConfig: config,
@@ -149,29 +149,25 @@ function checkFile(script) {
 			console.log(msg.message);
 		});
 	}
-	
+
 	// -- check requires
-	//jsCode.match(/require\('([\w\/\-]+)'\)/);
-	var myRegexp = /require\(['"]([\w\/\-]+)['"]\)/gi;
-	var match = myRegexp.exec(jsCode);
-	var modules = {};
+	let myRegexp = /require\(['"]([\w\/\-]+)['"]\)/gi;
+	let match = myRegexp.exec(jsCode);
+	let modules = {};
 	while (match != null) {
-	  // matched text: match[0]
-	  // match start: match.index
-	  // capturing group n: match[n]
-	  var requireStr = match[1];
-	  if (modules[requireStr]) {
-		  modules[requireStr]++;
-	  }
-	  else {
-		  modules[requireStr] = 1;
-	  }
-	  match = myRegexp.exec(jsCode);
+		let requireStr = match[1];
+		if (modules[requireStr]) {
+			modules[requireStr]++;
+		}
+		else {
+			modules[requireStr] = 1;
+		}
+		match = myRegexp.exec(jsCode);
 	}
-	
+
 	for (let moduleName in modules) {
 		if (modules[moduleName] > 1) {
-			console.log(FgRed + `Multiple require error: "${moduleName}" required ${modules[moduleName]}-times`+ Reset);
+			console.log(FgRed + `Multiple require error: "${moduleName}" required ${modules[moduleName]}-times` + Reset);
 		}
 	}
 }
