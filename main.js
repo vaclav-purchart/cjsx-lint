@@ -10,6 +10,7 @@ const FgRed = "\x1b[31m";
 
 let script = process.argv[2];
 let verbose = process.argv.indexOf('--verbose') >= 0;
+let details = process.argv.indexOf('--details') >= 0;
 let pwd;
 
 const exec = require('child_process').execSync;
@@ -30,7 +31,7 @@ if (process.argv.indexOf('--dir') >= 0) {
 }
 
 if (script === '--diff') {
-
+	
 	console.log('================');
 	let gitRoot = path.dirname(pwd);
 	gitRoot = `${pwd}/.git`;
@@ -39,7 +40,7 @@ if (script === '--diff') {
 	}
 	gitRoot = path.dirname(gitRoot);
 	log(`Detected GIT root: "${gitRoot}"`);
-
+	
 	let cmd = `cd "${gitRoot}" && git diff --name-only`
 	let files = exec(cmd).toString().trim().split('\n');
 
@@ -89,7 +90,13 @@ function checkFile(script) {
 		log(`Running coffeelint  cfg:${lintCfg}...`);
 
 		let lintCmd = `${__dirname}/node_modules/.bin/coffeelint -f ${lintCfg} ${script}`;
-		let lintOutCoffee = exec(lintCmd);
+		let lintOutCoffee;
+		try {
+			lintOutCoffee = exec(lintCmd);
+		}
+		catch (e) {
+			lintOutCoffee = e.stdout.toString();
+		}
 
 		if (lintOutCoffee.indexOf('Ok!') >= 0) {
 			console.log(FgGreen + 'No Coffee errors :-)' + Reset + '  ');
@@ -118,7 +125,8 @@ function checkFile(script) {
 	log('Compling JSX ...');
 	let jsxCode = jetpack.read(outJsx);
 	let jsResult = require("babel-core").transform(jsxCode, {
-		plugins: ["transform-react-jsx"]
+	  plugins: ["transform-react-jsx"],
+	  presets: ['es2015']
 	});
 	let jsCode = jsResult.code;
 
@@ -128,7 +136,7 @@ function checkFile(script) {
 	// -- run EsLint
 	log('Running esLint ...');
 	var CLIEngine = require("eslint").CLIEngine;
-	const config = { "extends": "eslint:recommended" };
+	const config = {"extends": "eslint:recommended"};
 
 	const cliEngine = new CLIEngine({
 		baseConfig: config,
@@ -147,27 +155,32 @@ function checkFile(script) {
 		console.log(FgRed + 'Errors:' + Reset);
 		errorReport[0].messages.forEach((msg) => {
 			console.log(msg.message);
+			details && console.log(msg);
 		});
 	}
-
+	
 	// -- check requires
-	let myRegexp = /require\(['"]([\w\/\-]+)['"]\)/gi;
-	let match = myRegexp.exec(jsCode);
-	let modules = {};
+	//jsCode.match(/require\('([\w\/\-]+)'\)/);
+	var myRegexp = /require\(['"]([\w\/\-]+)['"]\)/gi;
+	var match = myRegexp.exec(jsCode);
+	var modules = {};
 	while (match != null) {
-		let requireStr = match[1];
-		if (modules[requireStr]) {
-			modules[requireStr]++;
-		}
-		else {
-			modules[requireStr] = 1;
-		}
-		match = myRegexp.exec(jsCode);
+	  // matched text: match[0]
+	  // match start: match.index
+	  // capturing group n: match[n]
+	  var requireStr = match[1];
+	  if (modules[requireStr]) {
+		  modules[requireStr]++;
+	  }
+	  else {
+		  modules[requireStr] = 1;
+	  }
+	  match = myRegexp.exec(jsCode);
 	}
-
+	
 	for (let moduleName in modules) {
 		if (modules[moduleName] > 1) {
-			console.log(FgRed + `Multiple require error: "${moduleName}" required ${modules[moduleName]}-times` + Reset);
+			console.log(FgRed + `Multiple require error: "${moduleName}" required ${modules[moduleName]}-times`+ Reset);
 		}
 	}
 }
