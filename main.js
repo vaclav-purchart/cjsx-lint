@@ -18,7 +18,7 @@ const exec = require('child_process').execSync;
 function log() {
 	verbose && console.log.apply(console, arguments);
 }
-
+verbose = 1;
 // -- working dir
 if (process.argv.indexOf('--dir') >= 0) {
 	pwd = process.argv[process.argv.indexOf('--dir') + 1];
@@ -82,20 +82,25 @@ function checkFile(script) {
 	// -- coffeelint
 	let lintCfg = path.dirname(script);
 	lintCfg = `${lintCfg}/coffeelint.json`;
-	while (jetpack.exists(lintCfg) === false && lintCfg !== '/coffeelint.json') {
+	while (jetpack.exists(lintCfg) === false && lintCfg !== '//coffeelint.json') {
 		lintCfg = path.normalize(path.dirname(lintCfg) + '/..') + '/coffeelint.json';
 	}
-	log(`Running coffeelint  cfg:${lintCfg}...`);
+	if (jetpack.exists(lintCfg)) {
+		log(`Running coffeelint  cfg:${lintCfg}...`);
 
-	let lintCmd = `${__dirname}/node_modules/.bin/coffeelint -f ${lintCfg} ${script}`;
-	let lintOutCoffee = exec(lintCmd);
+		let lintCmd = `${__dirname}/node_modules/.bin/coffeelint -f ${lintCfg} ${script}`;
+		let lintOutCoffee = exec(lintCmd);
 
-	if (lintOutCoffee.indexOf('Ok!') >= 0) {
-		console.log(FgGreen + 'No Coffee errors :-)' + Reset + '  ');
+		if (lintOutCoffee.indexOf('Ok!') >= 0) {
+			console.log(FgGreen + 'No Coffee errors :-)' + Reset + '  ');
+		}
+		else {
+			console.log(FgRed + 'Coffee lint errors:' + Reset);
+			console.log(lintOutCoffee);
+		}
 	}
 	else {
-		console.log(FgRed + 'Coffee lint errors:' + Reset);
-		console.log(lintOutCoffee);
+		console.log('Skipping coffeelint - no coffelint.json found.');
 	}
 
 	// -- compile coffee
@@ -143,5 +148,30 @@ function checkFile(script) {
 		errorReport[0].messages.forEach((msg) => {
 			console.log(msg.message);
 		});
+	}
+	
+	// -- check requires
+	//jsCode.match(/require\('([\w\/\-]+)'\)/);
+	var myRegexp = /require\(['"]([\w\/\-]+)['"]\)/gi;
+	var match = myRegexp.exec(jsCode);
+	var modules = {};
+	while (match != null) {
+	  // matched text: match[0]
+	  // match start: match.index
+	  // capturing group n: match[n]
+	  var requireStr = match[1];
+	  if (modules[requireStr]) {
+		  modules[requireStr]++;
+	  }
+	  else {
+		  modules[requireStr] = 1;
+	  }
+	  match = myRegexp.exec(jsCode);
+	}
+	
+	for (let moduleName in modules) {
+		if (modules[moduleName] > 1) {
+			console.log(FgRed + `Multiple require error: "${moduleName}" required ${modules[moduleName]}-times`+ Reset);
+		}
 	}
 }
