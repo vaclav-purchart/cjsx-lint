@@ -141,6 +141,7 @@ function checkFile(script) {
 	const cliEngine = new CLIEngine({
 		baseConfig: config,
 		envs: ['browser', 'node'],
+		globals: ['Promise'],
 		useEslintrc: false   // Assuming that you don't want any .eslintrc in the filesystem to interfere. If you want .eslintrc, omit this
 	});
 
